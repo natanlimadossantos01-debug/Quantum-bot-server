@@ -1,4 +1,4 @@
-# app.py - Servidor do Quantum Bot (VERSÃO CORRIGIDA E COMPLETA)
+# app.py - Servidor do Quantum Bot (VERSÃO COMPLETA E CORRIGIDA)
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -11,7 +11,9 @@ import sys
 
 app = Flask(__name__)
 
-# Configurações
+# ============================================
+# CONFIGURAÇÕES
+# ============================================
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'quantum-bot-secret-2024')
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET', 'jwt-secret-2024')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False  # Tokens não expiram
@@ -22,7 +24,9 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # Inicializa JWT
 jwt = JWTManager(app)
 
-# Banco de dados em memória
+# ============================================
+# BANCO DE DADOS EM MEMÓRIA
+# ============================================
 usuarios = {}
 configs = {}
 bots = {}
@@ -32,7 +36,7 @@ historico = {}
 LICENCA = 'QUANTUM-BOT-2024'
 
 # ============================================
-# ROTA PRINCIPAL (RAIZ)
+# ROTA PRINCIPAL (RAIZ) - EVITA "NOT FOUND"
 # ============================================
 
 @app.route('/', methods=['GET'])
@@ -45,6 +49,7 @@ def home():
         'servidor': 'online',
         'timestamp': datetime.now().isoformat(),
         'endpoints': [
+            {'rota': '/', 'metodo': 'GET', 'descricao': 'Informações do servidor'},
             {'rota': '/api/health', 'metodo': 'GET', 'descricao': 'Verifica saúde do servidor'},
             {'rota': '/api/auth/register', 'metodo': 'POST', 'descricao': 'Registrar novo usuário'},
             {'rota': '/api/auth/login', 'metodo': 'POST', 'descricao': 'Login do usuário'},
@@ -354,18 +359,20 @@ def get_history():
         return jsonify({'error': str(e)}), 500
 
 # ============================================
-# TRATAMENTO DE ERROS GLOBAIS
+# TRATAMENTO DE ERROS
 # ============================================
 
 @app.errorhandler(404)
 def not_found(error):
+    """Rota não encontrada"""
     return jsonify({
         'error': 'Rota não encontrada',
-        'message': 'Verifique a URL ou consulte a documentação'
+        'message': 'Verifique a URL ou consulte a documentação em /'
     }), 404
 
 @app.errorhandler(500)
 def internal_error(error):
+    """Erro interno do servidor"""
     return jsonify({
         'error': 'Erro interno do servidor',
         'message': 'Tente novamente mais tarde'
