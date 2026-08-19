@@ -1,4 +1,4 @@
-# app.py - Servidor do Quantum Bot (VERSÃO CORRIGIDA)
+# app.py - Servidor do Quantum Bot (VERSÃO CORRIGIDA E COMPLETA)
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -16,6 +16,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'quantum-bot-secret-2024
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET', 'jwt-secret-2024')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False  # Tokens não expiram
 
+# CORS - Permitir todas as origens
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Inicializa JWT
@@ -29,6 +30,47 @@ historico = {}
 
 # Chave de licença
 LICENCA = 'QUANTUM-BOT-2024'
+
+# ============================================
+# ROTA PRINCIPAL (RAIZ)
+# ============================================
+
+@app.route('/', methods=['GET'])
+def home():
+    """Rota principal - mostra informações do servidor"""
+    return jsonify({
+        'status': 'online',
+        'message': '⚛️ Quantum Bot Server',
+        'version': '1.0.0',
+        'servidor': 'online',
+        'timestamp': datetime.now().isoformat(),
+        'endpoints': [
+            {'rota': '/api/health', 'metodo': 'GET', 'descricao': 'Verifica saúde do servidor'},
+            {'rota': '/api/auth/register', 'metodo': 'POST', 'descricao': 'Registrar novo usuário'},
+            {'rota': '/api/auth/login', 'metodo': 'POST', 'descricao': 'Login do usuário'},
+            {'rota': '/api/auth/validate', 'metodo': 'POST', 'descricao': 'Validar licença'},
+            {'rota': '/api/config', 'metodo': 'GET/POST', 'descricao': 'Configurações do bot'},
+            {'rota': '/api/bot/start', 'metodo': 'POST', 'descricao': 'Iniciar o bot'},
+            {'rota': '/api/bot/stop', 'metodo': 'POST', 'descricao': 'Parar o bot'},
+            {'rota': '/api/bot/status', 'metodo': 'GET', 'descricao': 'Status do bot'},
+            {'rota': '/api/bot/history', 'metodo': 'GET', 'descricao': 'Histórico de operações'}
+        ]
+    })
+
+# ============================================
+# ROTA DE SAÚDE
+# ============================================
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Verifica saúde do servidor"""
+    return jsonify({
+        'status': 'online',
+        'timestamp': datetime.now().isoformat(),
+        'bots_ativos': len([b for b in bots.values() if b.get('running', False)]),
+        'total_usuarios': len(usuarios),
+        'version': '1.0.0'
+    }), 200
 
 # ============================================
 # ROTAS DE AUTENTICAÇÃO
@@ -61,7 +103,8 @@ def registrar():
         return jsonify({
             'success': True,
             'token': token,
-            'username': usuario
+            'username': usuario,
+            'message': 'Usuário registrado com sucesso!'
         }), 201
         
     except Exception as e:
@@ -85,9 +128,25 @@ def login():
         return jsonify({
             'success': True,
             'token': token,
-            'username': usuario
+            'username': usuario,
+            'message': 'Login realizado com sucesso!'
         }), 200
         
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/auth/validate', methods=['POST'])
+def validate_license():
+    """Valida licença"""
+    try:
+        dados = request.json
+        licenca = dados.get('license_key')
+        
+        if licenca == LICENCA:
+            return jsonify({'valid': True, 'message': 'Licença válida'}), 200
+        else:
+            return jsonify({'valid': False, 'message': 'Licença inválida'}), 401
+            
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -294,46 +353,34 @@ def get_history():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/health', methods=['GET'])
-def health():
+# ============================================
+# TRATAMENTO DE ERROS GLOBAIS
+# ============================================
+
+@app.errorhandler(404)
+def not_found(error):
     return jsonify({
-        'status': 'online',
-        'timestamp': datetime.now().isoformat(),
-        'bots_ativos': len([b for b in bots.values() if b.get('running', False)]),
-        'total_usuarios': len(usuarios)
-    }), 200
+        'error': 'Rota não encontrada',
+        'message': 'Verifique a URL ou consulte a documentação'
+    }), 404
 
-# ============================================
-# ROTA PARA VALIDAR LICENÇA
-# ============================================
-
-@app.route('/api/auth/validate', methods=['POST'])
-def validate_license():
-    try:
-        dados = request.json
-        licenca = dados.get('license_key')
-        
-        if licenca == LICENCA:
-            return jsonify({'valid': True}), 200
-        else:
-            return jsonify({'valid': False}), 401
-            
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({
+        'error': 'Erro interno do servidor',
+        'message': 'Tente novamente mais tarde'
+    }), 500
 
 # ============================================
 # INICIALIZAÇÃO
 # ============================================
 
 if __name__ == '__main__':
+    # Usar a porta dinâmica do Railway
     port = int(os.environ.get('PORT', 5000))
-    print(f'🚀 Servidor rodando na porta {port}')
-    print(f'📊 Monitor: http://localhost:{port}/api/health')
+    print(f'🚀 Servidor Quantum Bot rodando na porta {port}')
+    print(f'📊 Health Check: http://localhost:{port}/api/health')
+    print(f'🌐 Rota raiz: http://localhost:{port}/')
     
-    # Inicia em modo debug apenas se não for produção
-    debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
-    
-    from flask_socketio import SocketIO
-    socketio = SocketIO(app, cors_allowed_origins="*")
-    
-    socketio.run(app, host='0.0.0.0', port=port, debug=debug_mode)
+    # Inicia com o servidor embutido do Flask
+    app.run(host='0.0.0.0', port=port, debug=False)
