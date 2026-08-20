@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>⚛️ Quantum Bot Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a1a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 420px;
+            width: 100%;
+            background: #12122a;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            height: fit-content;
+        }
+        .header {
+            text-align: center;
+            padding: 10px 0 20px;
+            border-bottom: 1px solid #1a1a3a;
+        }
+        .header h1 {
+            font-size: 24px;
+            background: linear-gradient(135deg, #4a9eff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header p {
+            color: #888;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 4px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #2a2a4a;
+            border-radius: 10px;
+            background: #1a1a3a;
+            color: #fff;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #4a9eff;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #4a9eff, #7c3aed);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 158, 255, 0.3);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-success {
+            background: #22c55e;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #16a34a;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .btn-secondary {
+            background: #2a2a4a;
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            background: #3a3a5a;
+        }
+        .btn-sm {
+            padding: 10px;
+            font-size: 14px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .status-online {
+            background: #22c55e33;
+            color: #22c55e;
+        }
+        .status-offline {
+            background: #ef444433;
+            color: #ef4444;
+        }
+        .card {
+            background: #1a1a3a;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .flex {
+            display: flex;
+            gap: 10px;
+        }
+        .flex-1 {
+            flex: 1;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-muted {
+            color: #888;
+            font-size: 14px;
+        }
+        .text-green {
+            color: #22c55e;
+        }
+        .text-red {
+            color: #ef4444;
+        }
+        .text-blue {
+            color: #4a9eff;
+        }
+        .mt-10 { margin-top: 10px; }
+        .mt-20 { margin-top: 20px; }
+        .mb-10 { margin-bottom: 10px; }
+        .mb-20 { margin-bottom: 20px; }
+        .hidden { display: none !important; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #2a2a4a;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .progress-bar .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a9eff, #7c3aed);
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #1a1a3a;
+            font-size: 13px;
+        }
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        #loginSection, #dashboardSection {
+            transition: opacity 0.3s;
+        }
+        .toast {
+            padding: 10px 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            display: none;
+        }
+        .toast-error {
+            background: #ef444433;
+            color: #ef4444;
+            border: 1px solid #ef444466;
+        }
+        .toast-success {
+            background: #22c55e33;
+            color: #22c55e;
+            border: 1px solid #22c55e66;
+        }
+        .toast-info {
+            background: #4a9eff33;
+            color: #4a9eff;
+            border: 1px solid #4a9eff66;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #1a1a3a; }
+        ::-webkit-scrollbar-thumb { background: #4a9eff; border-radius: 10px; }
+        /* Mobile */
+        @media (max-width: 480px) {
+            .container { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div class="header">
+        <h1>⚛️ Quantum Bot Pro</h1>
+        <p>Sistema de Trading Automatizado</p>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- ==================== LOGIN ==================== -->
+    <div id="loginSection">
+        <div class="form-group">
+            <label>👤 Usuário</label>
+            <input type="text" id="username" placeholder="Digite seu usuário">
+        </div>
+        <div class="form-group">
+            <label>🔒 Senha</label>
+            <input type="password" id="password" placeholder="Digite sua senha">
+        </div>
+        <div class="form-group">
+            <label>🔑 Chave de Licença</label>
+            <input type="text" id="licenseKey" placeholder="QUANTUM-BOT-2024" value="QUANTUM-BOT-2024">
+        </div>
+        <div class="flex">
+            <button class="btn btn-primary" id="btnLogin" onclick="login()">🚀 ENTRAR</button>
+            <button class="btn btn-secondary" onclick="register()">📝 REGISTRAR</button>
+        </div>
+        <p class="text-center text-muted mt-10" id="loginStatus">🔑 Faça login para começar</p>
+    </div>
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <div id="dashboardSection" class="hidden">
+        <!-- Status -->
+        <div class="card flex" style="align-items: center; justify-content: space-between;">
+            <span id="botStatus" class="status-badge status-offline">🔴 PARADO</span>
+            <span id="botStatusText" class="text-muted">Aguardando...</span>
+        </div>
+
+        <!-- Lucro -->
+        <div class="card text-center">
+            <div style="font-size: 28px; font-weight: bold;" id="lucroLabel">💰 R$ 0.00</div>
+            <span class="text-muted">Lucro do Dia</span>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="card">
+            <div class="flex">
+                <div class="flex-1 text-center">
+                    <div style="font-size: 22px; font-weight: bold;" id="opsLabel">0</div>
+                    <span class="text-muted">Operações</span>
+                </div>
+                <div class="flex-1 text-center">
+                    <div style="font-size: 22px; font-weight: bold; color: #22c55e;" id="winsLabel">0</div>
+                    <span class="text-muted">Wins</span>
+                </div>
+                <div class="flex-1 text-center">
+                    <div style="font-size: 22px; font-weight: bold; color: #ef4444;" id="lossesLabel">0</div>
+                    <span class="text-muted">Losses</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Taxa -->
+        <div class="card">
+            <div class="flex" style="justify-content: space-between; align-items: center;">
+                <span>📈 Taxa de Acerto</span>
+                <span style="font-weight: bold;" id="taxaLabel">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- Botões -->
+        <div class="flex">
+            <button class="btn btn-success flex-1" id="btnStart" onclick="startBot()">▶️ INICIAR</button>
+            <button class="btn btn-danger flex-1" id="btnStop" onclick="stopBot()">⏹️ PARAR</button>
+        </div>
+
+        <!-- Configurações -->
+        <div class="mt-20">
+            <details>
+                <summary style="cursor: pointer; color: #4a9eff;">⚙️ Configurações</summary>
+                <div class="mt-10">
+                    <div class="form-group">
+                        <label>💵 Valor de Entrada</label>
+                        <input type="number" id="valorEntrada" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label>🔄 Máximo de Gales</label>
+                        <input type="number" id="maxGales" value="2">
+                    </div>
+                    <button class="btn btn-secondary" onclick="saveConfig()">💾 SALVAR CONFIGURAÇÕES</button>
+                </div>
+            </details>
+        </div>
+
+        <!-- Histórico -->
+        <div class="mt-20">
+            <details>
+                <summary style="cursor: pointer; color: #4a9eff;">📜 Últimas Operações</summary>
+                <div class="mt-10" id="historyList">
+                    <p class="text-muted text-center">Nenhuma operação ainda</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- Botão Logout -->
+        <button class="btn btn-secondary mt-20" onclick="logout()" style="background: transparent; border: 1px solid #3a3a5a;">🚪 Sair</button>
+    </div>
+</div>
+
+<script>
+// ============================================
+// VARIÁVEIS GLOBAIS
+// ============================================
+let token = null;
+let username = null;
+let updateInterval = null;
+
+// ============================================
+// FUNÇÕES DE UI
+// ============================================
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast toast-${type}`;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 5000);
+}
+
+function setStatus(message) {
+    document.getElementById('loginStatus').textContent = message;
+}
+
+function showDashboard() {
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('dashboardSection').classList.remove('hidden');
+    startAutoUpdate();
+}
+
+function hideDashboard() {
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('dashboardSection').classList.add('hidden');
+    stopAutoUpdate();
+}
+
+// ============================================
+// AUTENTICAÇÃO
+// ============================================
+async function login() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!username || !password) {
+        showToast('❌ Preencha todos os campos', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('btnLogin');
+    btn.disabled = true;
+    setStatus('⏳ Conectando...');
+
+    try {
+        const response = await fetch('/api/web/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            token = data.token;
+            window.username = username;
+            showToast('✅ Conectado!', 'success');
+            setStatus('✅ Conectado!');
+            showDashboard();
+            loadConfig();
+            updateDashboard();
+        } else {
+            showToast(`❌ ${data.error || 'Erro desconhecido'}`, 'error');
+            setStatus(`❌ ${data.error}`);
+        }
+    } catch (error) {
+        showToast(`❌ ${error.message}`, 'error');
+        setStatus('❌ Erro de conexão');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function register() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const licenseKey = document.getElementById('licenseKey').value.trim();
+
+    if (!username || !password || !licenseKey) {
+        showToast('❌ Preencha todos os campos', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('btnLogin');
+    btn.disabled = true;
+    setStatus('⏳ Registrando...');
+
+    try {
+        const response = await fetch('/api/web/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, license_key: licenseKey })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            showToast('✅ Registrado! Faça login.', 'success');
+            setStatus('✅ Registrado! Faça login.');
+        } else {
+            showToast(`❌ ${data.error || 'Erro desconhecido'}`, 'error');
+            setStatus(`❌ ${data.error}`);
+        }
+    } catch (error) {
+        showToast(`❌ ${error.message}`, 'error');
+        setStatus('❌ Erro de conexão');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+function logout() {
+    token = null;
+    username = null;
+    hideDashboard();
+    setStatus('🔑 Desconectado');
+    showToast('👋 Até logo!', 'info');
+}
+
+// ============================================
+// BOT
+// ============================================
+async function startBot() {
+    if (!token) return;
+    const btn = document.getElementById('btnStart');
+    btn.disabled = true;
+    btn.textContent = '⏳...';
+
+    try {
+        const response = await fetch('/api/web/bot/start', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.success) {
+            showToast('✅ Bot iniciado!', 'success');
+        } else {
+            showToast(`❌ ${data.error || 'Erro'}`, 'error');
+        }
+    } catch (error) {
+        showToast(`❌ ${error.message}`, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '▶️ INICIAR';
+    }
+}
+
+async function stopBot() {
+    if (!token) return;
+    const btn = document.getElementById('btnStop');
+    btn.disabled = true;
+    btn.textContent = '⏳...';
+
+    try {
+        const response = await fetch('/api/web/bot/stop', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.success) {
+            showToast('✅ Bot parado!', 'success');
+        } else {
+            showToast(`❌ ${data.error || 'Erro'}`, 'error');
+        }
+    } catch (error) {
+        showToast(`❌ ${error.message}`, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '⏹️ PARAR';
+    }
+}
+
+// ============================================
+// DASHBOARD
+// ============================================
+async function updateDashboard() {
+    if (!token) return;
+
+    try {
+        const response = await fetch('/api/web/bot/status', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.success) {
+            applyStatus(data);
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar:', error);
+    }
+}
+
+function applyStatus(data) {
+    const rodando = data.rodando || false;
+    const status = document.getElementById('botStatus');
+    const statusText = document.getElementById('botStatusText');
+
+    if (rodando) {
+        status.textContent = '🟢 RODANDO';
+        status.className = 'status-badge status-online';
+        statusText.textContent = 'Ativo';
+    } else {
+        status.textContent = '🔴 PARADO';
+        status.className = 'status-badge status-offline';
+        statusText.textContent = 'Inativo';
+    }
+
+    // Lucro
+    const lucro = data.lucro_dia || 0;
+    const lucroLabel = document.getElementById('lucroLabel');
+    lucroLabel.textContent = `💰 R$ ${lucro.toFixed(2)}`;
+    lucroLabel.style.color = lucro >= 0 ? '#22c55e' : '#ef4444';
+
+    // Ops
+    document.getElementById('opsLabel').textContent = data.operacoes || 0;
+    document.getElementById('winsLabel').textContent = data.wins || 0;
+    document.getElementById('lossesLabel').textContent = data.losses || 0;
+
+    // Taxa
+    const ops = data.operacoes || 0;
+    const wins = data.wins || 0;
+    const taxa = ops > 0 ? (wins / ops) * 100 : 0;
+    document.getElementById('taxaLabel').textContent = `${taxa.toFixed(1)}%`;
+    document.getElementById('progressFill').style.width = `${Math.min(taxa, 100)}%`;
+}
+
+function startAutoUpdate() {
+    if (updateInterval) clearInterval(updateInterval);
+    updateInterval = setInterval(updateDashboard, 3000);
+}
+
+function stopAutoUpdate() {
+    if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = null;
+    }
+}
+
+// ============================================
+// CONFIGURAÇÕES
+// ============================================
+async function loadConfig() {
+    if (!token) return;
+
+    try {
+        const response = await fetch('/api/config', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.success && data.config) {
+            document.getElementById('valorEntrada').value = data.config.valor_entrada || 10;
+            document.getElementById('maxGales').value = data.config.max_gales || 2;
+        }
+    } catch (error) {
+        console.error('Erro ao carregar config:', error);
+    }
+}
+
+async function saveConfig() {
+    if (!token) {
+        showToast('❌ Faça login primeiro', 'error');
+        return;
+    }
+
+    const config = {
+        valor_entrada: parseFloat(document.getElementById('valorEntrada').value) || 10,
+        max_gales: parseInt(document.getElementById('maxGales').value) || 2,
+        multiplicador_gale: 2.0,
+        stop_loss: 0,
+        stop_win: 0,
+        operacoes_por_ciclo: 2,
+        account_type: 'PRACTICE'
+    };
+
+    try {
+        const response = await fetch('/api/config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(config)
+        });
+        const data = await response.json();
+        if (data.success) {
+            showToast('✅ Configurações salvas!', 'success');
+        } else {
+            showToast(`❌ ${data.error || 'Erro'}`, 'error');
+        }
+    } catch (error) {
+        showToast(`❌ ${error.message}`, 'error');
+    }
+}
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+    setStatus('🔑 Faça login para começar');
+    // Enter key para login
+    document.getElementById('password').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') login();
+    });
+    document.getElementById('username').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') login();
+    });
+});
+</script>
+</body>
+</html>
